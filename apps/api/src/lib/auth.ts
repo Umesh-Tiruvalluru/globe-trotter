@@ -9,12 +9,15 @@ if (!secret) {
   );
 }
 
-const url = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
-if (!url) {
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+if (!googleClientId || !googleClientSecret) {
   throw new Error(
-    "BETTER_AUTH_URL environment variable is required. The value can be generated using the bash cmd 'openssl rand -base64 32'.",
+    'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required for Google OAuth.',
   );
 }
+
+const url = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
 
 export const auth = betterAuth({
   secret,
@@ -24,8 +27,8 @@ export const auth = betterAuth({
   }),
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
     },
   },
   account: {
