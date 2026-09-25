@@ -9,31 +9,32 @@ if (!secret) {
   );
 }
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-if (!googleClientId || !googleClientSecret) {
-  throw new Error(
-    'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required for Google OAuth.',
-  );
+const baseURL = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
+
+function getGoogleProvider() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    return undefined;
+  }
+  return { clientId, clientSecret };
 }
 
-const url = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
+const googleProvider = getGoogleProvider();
+
+const trustedProviders: string[] = googleProvider ? ['google'] : [];
 
 export const auth = betterAuth({
   secret,
-  baseURL: url,
+  baseURL,
   database: drizzleAdapter(db, {
     provider: 'pg',
   }),
-  socialProviders: {
-    google: {
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
-    },
-  },
+  socialProviders: googleProvider ? { google: googleProvider } : undefined,
   account: {
     accountLinking: {
       enabled: true,
+      trustedProviders,
     },
   },
   user: {
@@ -41,5 +42,5 @@ export const auth = betterAuth({
       role: { type: 'string', defaultValue: 'learner', input: false },
     },
   },
-  trustedOrigins: ['http://localhost:3000'],
+  trustedOrigins: [baseURL],
 });
