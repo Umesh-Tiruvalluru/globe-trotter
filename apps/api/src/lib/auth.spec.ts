@@ -15,7 +15,6 @@ const REQUIRED_KEYS = [
 const GOOGLE_KEYS = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'] as const;
 
 async function loadAuth() {
-  jest.resetModules();
   jest.unstable_mockModule('better-auth/minimal', () => ({
     betterAuth: jest.fn((options: unknown) => ({ options })),
   }));
@@ -43,7 +42,8 @@ describe('Better Auth social sign-in configuration', () => {
     process.env.GOOGLE_CLIENT_ID = '__test_google_client_id__';
     process.env.GOOGLE_CLIENT_SECRET = '__test_google_client_secret__';
 
-    const { auth } = await loadAuth();
+    const { createAuth } = await loadAuth();
+    const auth = createAuth();
 
     expect(auth.options.socialProviders?.google).toEqual({
       clientId: '__test_google_client_id__',
@@ -59,7 +59,8 @@ describe('Better Auth social sign-in configuration', () => {
     delete process.env.GOOGLE_CLIENT_ID;
     delete process.env.GOOGLE_CLIENT_SECRET;
 
-    const { auth } = await loadAuth();
+    const { createAuth } = await loadAuth();
+    const auth = createAuth();
 
     expect(auth.options.socialProviders).toBeUndefined();
     expect(auth.options.account?.accountLinking).toEqual({
@@ -72,14 +73,16 @@ describe('Better Auth social sign-in configuration', () => {
     process.env.GOOGLE_CLIENT_ID = '__test_google_client_id__';
     delete process.env.GOOGLE_CLIENT_SECRET;
 
-    const { auth } = await loadAuth();
+    const { createAuth } = await loadAuth();
+    const auth = createAuth();
 
     expect(auth.options.socialProviders).toBeUndefined();
   });
 
   it('throws when BETTER_AUTH_SECRET is missing', async () => {
+    const { createAuth } = await loadAuth();
     delete process.env.BETTER_AUTH_SECRET;
 
-    await expect(loadAuth()).rejects.toThrow('BETTER_AUTH_SECRET');
+    expect(() => createAuth()).toThrow('BETTER_AUTH_SECRET');
   });
 });
