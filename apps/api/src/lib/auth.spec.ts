@@ -15,6 +15,7 @@ const REQUIRED_KEYS = [
 const GOOGLE_KEYS = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'] as const;
 
 async function loadAuth() {
+  jest.resetModules();
   jest.unstable_mockModule('better-auth/minimal', () => ({
     betterAuth: jest.fn((options: unknown) => ({ options })),
   }));
