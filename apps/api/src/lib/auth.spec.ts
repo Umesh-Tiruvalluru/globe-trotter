@@ -53,6 +53,7 @@ describe('Better Auth social sign-in configuration', () => {
       enabled: true,
       trustedProviders: ['google'],
     });
+    expect(auth.options.trustedOrigins).toEqual(['http://localhost:3000']);
   });
 
   it('boots without Google OAuth when credentials are absent', async () => {
