@@ -12,6 +12,7 @@ const REQUIRED_KEYS = [
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
   'DATABASE_URL',
+  'TEST_DATABASE_URL',
   'WEB_URL'
 ] as const;
 const GOOGLE_KEYS = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'] as const;
@@ -50,6 +51,7 @@ describe('Better Auth social sign-in configuration', () => {
     process.env.BETTER_AUTH_SECRET = 'test-secret';
     process.env.BETTER_AUTH_URL = 'http://localhost:4000';
     process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/test';
+    process.env.TEST_DATABASE_URL = 'postgres://test:test@localhost:5432/test';
     process.env.WEB_URL = 'http://localhost:3000';
   });
 
