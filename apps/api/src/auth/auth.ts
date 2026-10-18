@@ -12,6 +12,11 @@ export type Auth = ReturnType<typeof createAuth>;
 export function createAuth(emailService: EmailService) {
   const nodeEnv = process.env.NODE_ENV;
   const emailProvider = process.env.EMAIL_PROVIDER;
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  
+  const googleProvider =
+    clientId && clientSecret ? { clientId, clientSecret } : undefined;
 
   if (nodeEnv !== "test" && emailProvider === "stub") {
     throw new APIError("INTERNAL_SERVER_ERROR", { message: "No real email provider configured in a non-test environment." });
@@ -88,6 +93,13 @@ export function createAuth(emailService: EmailService) {
     database: drizzleAdapter(db, {
       provider: "pg",
     }),
+    socialProviders: googleProvider ? { google: googleProvider } : undefined,
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: googleProvider ? ['google'] : [],
+      },
+    },
     user: {
       additionalFields: {
         role: { type: "string", defaultValue: "learner", input: false },
