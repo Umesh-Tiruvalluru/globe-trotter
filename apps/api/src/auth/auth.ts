@@ -3,7 +3,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { db } from "@repo/database";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { passwordSchema } from "@repo/types";
-import { EmailService } from "../email/email.service";
+import type { EmailService } from "../email/email.service";
 import { Logger } from "@nestjs/common";
 
 export type Auth = ReturnType<typeof createAuth>;
@@ -14,7 +14,7 @@ export function createAuth(emailService: EmailService) {
   const emailProvider = process.env.EMAIL_PROVIDER;
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  
+
   const googleProvider =
     clientId && clientSecret ? { clientId, clientSecret } : undefined;
 

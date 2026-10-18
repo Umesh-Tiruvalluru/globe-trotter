@@ -6,13 +6,21 @@ import {
   it,
   jest,
 } from '@jest/globals';
+import type { EmailService } from '../email/email.service';
 
 const REQUIRED_KEYS = [
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
   'DATABASE_URL',
+  'WEB_URL'
 ] as const;
 const GOOGLE_KEYS = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'] as const;
+
+const mockEmailService = {
+  sendVerificationEmail: jest.fn(),
+  sendPasswordResetEmail: jest.fn(),
+  sendDuplicateSignUpNotice: jest.fn(),
+} as unknown as EmailService;
 
 async function loadAuth() {
   jest.resetModules();
@@ -23,20 +31,34 @@ async function loadAuth() {
   jest.unstable_mockModule('@better-auth/drizzle-adapter', () => ({
     drizzleAdapter: jest.fn(() => ({})),
   }));
+  jest.unstable_mockModule('better-auth/api', () => ({
+    APIError: class APIError extends Error {
+      constructor(
+        public code: string,
+        public options?: { message?: string }
+      ) {
+        super(options?.message ?? code);
+      }
+    },
+    createAuthMiddleware: (x: unknown) => x
+  }));
   return import('./auth');
 }
 
 describe('Better Auth social sign-in configuration', () => {
   beforeEach(() => {
     process.env.BETTER_AUTH_SECRET = 'test-secret';
-    process.env.BETTER_AUTH_URL = 'http://localhost:3000';
+    process.env.BETTER_AUTH_URL = 'http://localhost:4000';
     process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/test';
+    process.env.WEB_URL = 'http://localhost:3000';
   });
 
   afterEach(() => {
     for (const key of [...REQUIRED_KEYS, ...GOOGLE_KEYS]) {
       delete process.env[key];
     }
+    //? Prevents call counts from leaking between tests if later assertions are added
+    jest.clearAllMocks();
   });
 
   it('registers Google and trusts it for account linking when credentials are present', async () => {
@@ -44,7 +66,7 @@ describe('Better Auth social sign-in configuration', () => {
     process.env.GOOGLE_CLIENT_SECRET = '__test_google_client_secret__';
 
     const { createAuth } = await loadAuth();
-    const auth = createAuth();
+    const auth = createAuth(mockEmailService);
 
     expect(auth.options.socialProviders?.google).toEqual({
       clientId: '__test_google_client_id__',
@@ -62,7 +84,7 @@ describe('Better Auth social sign-in configuration', () => {
     delete process.env.GOOGLE_CLIENT_SECRET;
 
     const { createAuth } = await loadAuth();
-    const auth = createAuth();
+    const auth = createAuth(mockEmailService);
 
     expect(auth.options.socialProviders).toBeUndefined();
     expect(auth.options.account?.accountLinking).toEqual({
@@ -76,7 +98,7 @@ describe('Better Auth social sign-in configuration', () => {
     delete process.env.GOOGLE_CLIENT_SECRET;
 
     const { createAuth } = await loadAuth();
-    const auth = createAuth();
+    const auth = createAuth(mockEmailService);
 
     expect(auth.options.socialProviders).toBeUndefined();
   });
@@ -85,6 +107,6 @@ describe('Better Auth social sign-in configuration', () => {
     const { createAuth } = await loadAuth();
     delete process.env.BETTER_AUTH_SECRET;
 
-    expect(() => createAuth()).toThrow('BETTER_AUTH_SECRET');
+    expect(() => createAuth(mockEmailService)).toThrow('BETTER_AUTH_SECRET');
   });
 });
