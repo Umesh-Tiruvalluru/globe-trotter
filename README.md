@@ -16,7 +16,7 @@ Learners interact with a live map and other visual/spatial elements directly in 
 
 **Auth**: Better Auth with email/password and Google OAuth
 
-**Tests**: Jest
+**Tests**: Jest + Playwright
 
 ## How to get started
 
@@ -30,6 +30,13 @@ Copy the example file:
 
 ```bash
 cp .env.example .env
+```
+
+Create the databases for local testing:
+
+```bash
+docker compose exec postgres psql -U globe-trotter -d postgres -c "CREATE DATABASE globe_trotter_test;"
+docker compose exec postgres psql -U globe-trotter -d postgres -c "CREATE DATABASE globe_trotter_migration_test;"
 ```
 
 Generate a secret for Better Auth and set it as `BETTER_AUTH_SECRET`:
@@ -83,9 +90,37 @@ pnpm db:migrate
 
 > **Note:** Seeding is not yet wired up (tracked separately). Once available, it will be runnable with `pnpm db:seed` from `/packages/database`.
 
+## Local API testing
+
+If you want to run the API without the frontend, run:
+
+```bash
+pnpm --filter api dev
+```
+
+Then split the terminal and run the following in the new terminal:
+
+```bash
+pnpm --filter @repo/types dev
+```
+
+> **Note:** The API is run this way due to `@repo/types` now being a built package.
+
+## Local email testing
+
+Emails sent locally are captured by Mailpit. Start the service with:
+
+```bash
+docker compose up -d mailpit
+```
+
+Then visit `http://localhost:8025` to view captured messages. The verification link in the email is clickable and completes the verification flow.
+
+For production, set `EMAIL_PROVIDER=resend` and provide `RESEND_API_KEY`. The `EMAIL_FROM` address must be on a domain verified with Resend. As of the most recent update to this document, there is no verified domain for Globe Trotter, so please use either the stub or SMTP for development.
+
 ## File Structure
 
-```
+```txt
 globetrotter/
 ├── apps/
 |    └── api/
