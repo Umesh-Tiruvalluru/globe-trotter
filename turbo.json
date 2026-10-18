@@ -1,13 +1,22 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "NODE_ENV"
+  ],
   "globalPassThroughEnv": [
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
     "DATABASE_URL",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
-    "PORT"
+    "PORT",
+    "WEB_URL",
+    "EMAIL_PROVIDER",
+    "EMAIL_FROM",
+    "RESEND_API_KEY",
+    "SMTP_HOST",
+    "SMTP_PORT"
   ],
   "tasks": {
     "build": {
@@ -17,6 +26,9 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env*"
+      ],
+      "env": [
+        "NEXT_PUBLIC_API_URL"
       ],
       "outputs": [
         "dist/**",
@@ -41,7 +53,6 @@
       ],
       "cache": false,
       "env": [
-        "NODE_ENV",
         "TEST_DATABASE_URL",
         "MIGRATION_TEST_DATABASE_URL"
       ]
